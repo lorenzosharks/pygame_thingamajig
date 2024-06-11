@@ -8,9 +8,7 @@ print(rectangle.attack)
 
 pygame.init()
 
-
 #player_image = pygame.image.load("")  # Replace "player.png" with the path to your image
-
 
 #sizing and coordinates
 screenW = 1000
