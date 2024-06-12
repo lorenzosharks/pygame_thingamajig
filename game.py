@@ -3,6 +3,8 @@
 import pygame
 from character import Character
 from bordercontrol import border_control
+from movement import handle_key_presses
+
 
 rectangle = Character(100, 0, 0, 0, 0, 0)
 
@@ -50,29 +52,7 @@ allowD = True
 
 while run:
     
-    # keys pressing thingamajig
-    key = pygame.key.get_pressed()
-    if allowW:
-        if key[pygame.K_w]:
-            y = y-5
-    if allowS:
-        if key[pygame.K_s]:
-            y = y+5
-    if allowA:
-        if key[pygame.K_a]:
-            x = x-5
-    if allowD:
-        if key[pygame.K_d]: 
-            x = x-5
-    if key[pygame.K_r]:
-        x = OGx
-        y = OGy
-    if allowed:
-        if key[pygame.K_l]:
-            health = health-5
-        if health < screenW - 80:
-            if key[pygame.K_p]:
-                health = health+5
+    x, y, health = handle_key_presses(allowW, allowS, allowA, allowD, allowed, x, y, OGx, OGy, health, screenW)
 
     if health < 0:
         health = 0
@@ -85,59 +65,8 @@ while run:
     playerC1 = pygame.draw.rect(screen, "green", (x, y, 1, 1))
     playerC3 = pygame.draw.rect(screen, "purple", (x + sizeW, y + sizeH, 1, 1))
 
-
-
-
-
-
-
-
-
-
     # update collision detection
     allowA, allowW, allowD, allowS = border_control(playerC1, playerC3, screenW, screenH)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     # health bar stuff
     healthbar = pygame.draw.rect(screen, "black", (35, 5, screenW - 70, 60))
