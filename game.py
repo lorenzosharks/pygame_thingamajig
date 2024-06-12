@@ -62,7 +62,7 @@ while run:
         if key[pygame.K_a]:
             x = x-5
     if allowD:
-        if key[pygame.K_d]:
+        if key[pygame.K_d]: 
             x = x-5
     if key[pygame.K_r]:
         x = OGx
@@ -85,8 +85,59 @@ while run:
     playerC1 = pygame.draw.rect(screen, "green", (x, y, 1, 1))
     playerC3 = pygame.draw.rect(screen, "purple", (x + sizeW, y + sizeH, 1, 1))
 
+
+
+
+
+
+
+
+
+
     # update collision detection
     allowA, allowW, allowD, allowS = border_control(playerC1, playerC3, screenW, screenH)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     # health bar stuff
     healthbar = pygame.draw.rect(screen, "black", (35, 5, screenW - 70, 60))
