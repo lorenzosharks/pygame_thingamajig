@@ -13,8 +13,10 @@ tank_body = pygame.image.load("tank.png")  # Replace "tank.png" with the path to
 tank_turret = pygame.image.load("turret.png")  # Replace "turret.png" with the path to your image
 
 # sizing and coordinates
-screenW = 1000
-screenH = 800
+
+pixels = pygame.display.Info()
+screenW = pixels.current_w - 50
+screenH = pixels.current_h - 50
 
 sizeW = 50
 sizeH = 50
@@ -96,10 +98,10 @@ while run:
             if key[pygame.K_p]:
                 health += 5
 
-    playerC1 = pygame.draw.rect(screen, "purple", (x, y, 1, 1))
-    playerC2 = pygame.draw.rect(screen, "purple", (x + sizeW, y, 1, 1))
-    playerC3 = pygame.draw.rect(screen, "purple", (x + sizeW, y + sizeH, 1, 1))
-    playerC4 = pygame.draw.rect(screen, "purple", (x, y + sizeH, 1, 1))
+    playerC1 = pygame.draw.rect(screen, "green", (x, y, 1, 1))
+    playerC2 = pygame.draw.rect(screen, "green", (x + sizeW, y, 1, 1))
+    playerC3 = pygame.draw.rect(screen, "green", (x + sizeW, y + sizeH, 1, 1))
+    playerC4 = pygame.draw.rect(screen, "green", (x, y + sizeH, 1, 1))
 
     # Update collision detection
     if x < 0:
