@@ -11,6 +11,7 @@ pygame.init()
 
 tank_body = pygame.image.load("tank.png")  # Replace "tank.png" with the path to your image
 tank_turret = pygame.image.load("turret.png")  # Replace "turret.png" with the path to your image
+shell = pygame.image.load("bullet.png")
 
 # Sizing and coordinates
 pixels = pygame.display.Info()
@@ -46,8 +47,9 @@ angle = 0
 angle_radians = 0
 
 # Turret rotation speed (degrees per second)
-max_turret_rotation_speed = 50
+max_turret_rotation_speed = 60
 current_turret_angle = 0
+current_shell_angle = 0
 
 # Miscellaneous (ie cheats)
 actual_tankspeed = 2
@@ -129,20 +131,33 @@ while run:
     turret_x = x + sizeW // 2
     turret_y = y + sizeH // 2
 
+    shell_x = x +sizeW // 2
+    shell_y = y +sizeH // 2
+
     # Calculate the angle between the turret and the mouse cursor using atan2
     dx = mouse_x - turret_x
     dy = mouse_y - turret_y
     target_turret_angle = math.degrees(math.atan2(-dy, dx))
 
-    # Normalize the current and target turret angles
+    dsx = shell_x - turret_x
+    dsy = shell_y - turret_y
+    target_shell_angle = math.degrees(math.atan2(-dy, dx))
+
+    # Normalize the current and target turret angles (no idea what this does)
     current_turret_angle = normalize_angle(current_turret_angle)
     target_turret_angle = normalize_angle(target_turret_angle)
+
+    current_shell_angle = normalize_angle(current_shell_angle)
+    target_shell_angle = normalize_angle(target_shell_angle)
 
     # Calculate the difference between the target angle and the current angle
     turret_angle_diff = target_turret_angle - current_turret_angle
     turret_angle_diff = normalize_angle(turret_angle_diff)
 
-    # Calculate the amount to rotate this frame
+    shell_angle_diff = target_shell_angle - current_shell_angle
+    shell_angle_diff = normalize_angle(shell_angle_diff)
+
+    # Calculate the amount to rotate this frame (no idea what this does either)
     rotation_speed = max_turret_rotation_speed * dt
     if abs(turret_angle_diff) < rotation_speed:
         current_turret_angle = target_turret_angle
@@ -151,15 +166,27 @@ while run:
     else:
         current_turret_angle -= rotation_speed
 
+    if abs(shell_angle_diff) < rotation_speed:
+        current_shell_angle = target_shell_angle
+    elif shell_angle_diff > 0:
+        current_shell_angle += rotation_speed
+    else:
+        current_shell_angle -= rotation_speed
+
     # Rotate the image
     rotated_body = pygame.transform.rotate(tank_body, angle)
     rotated_rect = rotated_body.get_rect(center=(x + sizeW // 2, y + sizeH // 2))
+    
+    # Rotating the shell and turret
+    rotated_shell = pygame.transform.rotate(shell, current_shell_angle - 90)
+    rotated_rect_shell = rotated_shell.get_rect(center=rotated_rect.center)
 
     rotated_turret = pygame.transform.rotate(tank_turret, current_turret_angle - 90)
     rotated_rect_turret = rotated_turret.get_rect(center=rotated_rect.center)
 
     # Draw the rotated images
     screen.blit(rotated_body, rotated_rect.topleft)
+    screen.blit(rotated_shell, rotated_rect_shell.topleft)
     screen.blit(rotated_turret, rotated_rect_turret.topleft)
 
     # Health bar stuff
