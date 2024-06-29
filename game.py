@@ -10,7 +10,7 @@ print(rectangle.attack)
 pygame.init()
 
 tank_body = pygame.image.load("tank.png")  # Replace "tank.png" with the path to your image
-tank_turret = pygame.image.load("turret.png")  # Replace "turret.png" with the path to your image
+tank_turret = pygame.image.load("turret_larger.png")  # Replace "turret.png" with the path to your image
 shell = pygame.image.load("bullet.png")
 
 # Sizing and coordinates
