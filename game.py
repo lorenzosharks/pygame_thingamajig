@@ -1,16 +1,15 @@
-# main.py
 import pygame
 import sys
-from pygame.sprite import Group
 import math
 
 pygame.init()
 
+# Load images
 tank_body = pygame.image.load("tank.png")  # Replace "tank.png" with the path to your image
 tank_turret = pygame.image.load("turret_larger.png")  # Replace "turret.png" with the path to your image
 shell = pygame.image.load("bullet.png")
 
-# Sizing and coordinates
+# Screen setup
 pixels = pygame.display.Info()
 screenW = pixels.current_w - 50
 screenH = pixels.current_h - 50
@@ -25,15 +24,15 @@ OGy = screenH // 2 - tank_body.get_height() // 2
 
 health = screenW - 80
 
-# Screen things
+# Screen and clock setup
 dt = 0
 clock = pygame.time.Clock()
-pygame.display.set_caption("Thing")
+pygame.display.set_caption("Tank Game")
 run = True
 screen = pygame.display.set_mode((screenW, screenH))
 allowed = True
 
-# Collision detection thing
+# Movement and rotation flags
 allowW = True
 allowS = True
 allowA = True
@@ -44,18 +43,33 @@ angle = 0
 angle_radians = 0
 
 # Turret rotation speed (degrees per second)
-max_turret_rotation_speed = 10000
+max_turret_rotation_speed = 60
 current_turret_angle = 0
 current_shell_angle = 0
 
 # Miscellaneous (ie cheats)
 actual_tankspeed = 2
-tank_speed = 0  # Don't change this fella
+tank_speed = 0
 body_rotation_speed = 1
 backward_speed = 1
+muzzle_velocity = 10000
+rounds = 79
+reload_speed = 10000 # In milliseconds
 
-# Other things
+velocity_x = 0
+velocity_y = 0
+
+# Other flags
 allowed_rotation = True
+allowed_fire = True
+disable_reload =False
+
+# Reload logic
+start_reload = None
+reload = False
+
+# Shell data structure
+shells = []
 
 # Normalize angles to the range [-180, 180]
 def normalize_angle(angle):
@@ -65,58 +79,55 @@ def normalize_angle(angle):
         angle -= 360
     return angle
 
-# Tank shell
-class tank_shell(pygame.sprite.Sprite):
-    def __init__(self, x, y, velocity, shell_angle):
-        super().__init__()
-        self.image = shell
-        self.rect = self.image.get_rect()
-        self.rect.topleft = (x - 25, y - 25)
-        self.image = pygame.transform.rotate(self.image, shell_angle - 90)
-        self.velocity = velocity
-        self.timer = 10000  # Timer for 5 seconds
-
-    def clone(self, x, y, shell_angle):
-        return tank_shell(x, y, self.velocity, shell_angle)
-
-    def update(self, dt):
-        self.timer -= dt
-        if self.timer <= 0:
-            self.kill()
-
-# Create an initial tank shell to clone from
-initial_shell = tank_shell((x + sizeW // 2), (y + sizeH // 2), 0, current_shell_angle)
-
-# Create a sprite group to manage tank shells
-all_sprites = pygame.sprite.Group()
-all_sprites.add(initial_shell)
-
 while run:
-    screen.fill("green")
+    screen.fill("Green")  # Green background
 
+    # Reload, shooting, and closing things
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
     
         if event.type == pygame.MOUSEBUTTONDOWN:
-            # Get the mouse position
-            mouse_pos = event.pos
+            if reload == False and allowed_fire == True:
+                mouse_buttons = pygame.mouse.get_pressed()
+                if mouse_buttons[0]:
+                    turret_x = x + sizeW // 2
+                    turret_y = y + sizeH // 2
 
-            mouse_buttons = pygame.mouse.get_pressed()
-            
-            # Check which button was clicked
-            if mouse_buttons[0]:
+                    # Calculate initial velocity components based on turret angle
+                    velocity_x = muzzle_velocity * math.cos(math.radians(current_shell_angle))
+                    velocity_y = -muzzle_velocity * math.sin(math.radians(current_shell_angle))
 
-                # Calculate the center of the turret body
-                turret_x = x + sizeW // 2
-                turret_y = y + sizeH // 2
+                    shells.append((turret_x, turret_y, current_shell_angle, velocity_x, velocity_y, pygame.time.get_ticks()))
 
-                # Clone shell at turret position and angle
-                cloned_shell = initial_shell.clone(turret_x, turret_y, current_shell_angle)
-                
-                all_sprites.add(cloned_shell)
+                    rounds -= 1
 
+                    start_reload = pygame.time.get_ticks()
+                    reload = True
+
+    if reload:
+        current_time = pygame.time.get_ticks()
+        elapsed_time_reload = current_time - start_reload
+
+        if elapsed_time_reload >= reload_speed:
+            reload = False
+
+    if rounds <= 0:
+        allowed_fire = False
+    elif rounds > 0:
+        allowed_fire = True
+    
+    if rounds >= 79:
+        disable_reload = True
+    if rounds == 0:
+        disable_reload = False
+
+
+    # Key pressing
     key = pygame.key.get_pressed()
+
+    if key[pygame.K_LSHIFT] and key[pygame.K_r] and disable_reload == False:
+        rounds += 1
 
     if key[pygame.K_1]:
         allowed_rotation = False
@@ -150,11 +161,13 @@ while run:
     else:
         tank_speed = 0
 
+
     if key[pygame.K_r]:
         x = OGx
         y = OGy
         angle_radians = 0
         angle = 0
+        shells.clear()
 
     if health < 0:
         health = 0
@@ -167,7 +180,7 @@ while run:
             if key[pygame.K_p]:
                 health += 5
 
-    # Update collision detection
+    #Screen logic
     if x < 0:
         x = 0
     elif x > screenW - sizeW:
@@ -177,45 +190,29 @@ while run:
     elif y > screenH - sizeH:
         y = screenH - sizeH
 
-    # Rotate the image
-    rotated_body = pygame.transform.rotate(tank_body, angle)
-    rotated_rect = rotated_body.get_rect(center=(x + sizeW // 2, y + sizeH // 2))
-
-    # Get mouse position
+    #Turret lock
     if allowed_rotation:
         mouse_x, mouse_y = pygame.mouse.get_pos()
-
-        # Calculate the center of the turret body
         turret_x = x + sizeW // 2
         turret_y = y + sizeH // 2
 
-        shell_x = x + sizeW // 2
-        shell_y = y + sizeH // 2
-
-        # Calculate the angle between the turret and the mouse cursor using atan2
         dx = mouse_x - turret_x
         dy = mouse_y - turret_y
         target_turret_angle = math.degrees(math.atan2(-dy, dx))
+        target_shell_angle = target_turret_angle
 
-        dsx = shell_x - turret_x
-        dsy = shell_y - turret_y
-        target_shell_angle = math.degrees(math.atan2(-dy, dx))
-
-        # Normalize the current and target turret angles (no idea what this does)
         current_turret_angle = normalize_angle(current_turret_angle)
         target_turret_angle = normalize_angle(target_turret_angle)
 
         current_shell_angle = normalize_angle(current_shell_angle)
         target_shell_angle = normalize_angle(target_shell_angle)
 
-        # Calculate the difference between the target angle and the current angle
         turret_angle_diff = target_turret_angle - current_turret_angle
         turret_angle_diff = normalize_angle(turret_angle_diff)
 
         shell_angle_diff = target_shell_angle - current_shell_angle
         shell_angle_diff = normalize_angle(shell_angle_diff)
 
-        # Calculate the amount to rotate this frame (no idea what this does either)
         rotation_speed = max_turret_rotation_speed * dt
 
         if abs(turret_angle_diff) < rotation_speed:
@@ -232,36 +229,54 @@ while run:
         else:
             current_shell_angle -= rotation_speed
 
-    # Rotating the shell and turret
+    # Rotations and whatnot
+    rotated_body = pygame.transform.rotate(tank_body, angle)
+    rotated_rect = rotated_body.get_rect(center=(x + sizeW // 2, y + sizeH // 2))
+
     rotated_shell = pygame.transform.rotate(shell, current_shell_angle - 90)
-    rotated_rect_shell = rotated_shell.get_rect(center=rotated_rect.center)
+    rotated_rect_shell = rotated_shell.get_rect(center=(rotated_rect.centerx + 25, rotated_rect.centery + 25))
 
     rotated_turret = pygame.transform.rotate(tank_turret, current_turret_angle - 90)
     rotated_rect_turret = rotated_turret.get_rect(center=rotated_rect.center)
     
+    # Update and draw shell positions
+    shells_to_remove = []
+    for i, shell_pos in enumerate(shells):
+        turret_x, turret_y, shell_angle, velocity_x, velocity_y, start_time = shell_pos
+        elapsed_time = pygame.time.get_ticks() - start_time
+
+        # Update shell position based on velocity
+        shell_x = turret_x + velocity_x * elapsed_time / 1000
+        shell_y = turret_y + velocity_y * elapsed_time / 1000
+
+        if elapsed_time > 5000:  # 5000 milliseconds = 5 seconds
+            shells_to_remove.append(i)
+        else:
+            rotated_shell = pygame.transform.rotate(shell, shell_angle - 90)
+            rotated_rect_shell = rotated_shell.get_rect(center=(shell_x, shell_y))
+            screen.blit(rotated_shell, rotated_rect_shell.topleft)
+    
+    # Remove shells that have expired
+    for index in sorted(shells_to_remove, reverse=True):
+        del shells[index]
+
     # Draw the rotated images
     screen.blit(rotated_body, rotated_rect.topleft)
-    screen.blit(rotated_shell, rotated_rect_shell.topleft)
-    # screen.blit(rotated_turret, rotated_rect_turret.topleft)
+    screen.blit(rotated_turret, rotated_rect_turret.topleft)
 
-    playerC1 = pygame.draw.rect(screen, "green", (x, y, 1, 1))
-    playerC2 = pygame.draw.rect(screen, "green", (x + sizeW, y, 1, 1))
-    playerC3 = pygame.draw.rect(screen, "green", (x + sizeW, y + sizeH, 1, 1))
-    playerC4 = pygame.draw.rect(screen, "green", (x, y + sizeH, 1, 1))
-    
-                
-    # Health bar stuff
-    healthbar = pygame.draw.rect(screen, "black", (35, 5, screenW - 70, 60))
-    pygame.draw.rect(screen, "red", (40, 10, health, 50))
+    # Draw health bar
+    healthbar = pygame.draw.rect(screen, (0, 0, 0), (35, 5, screenW - 70, 60))
+    pygame.draw.rect(screen, (255, 0, 0), (40, 10, health, 50))
     font = pygame.font.Font(None, 36)
     text_surface = font.render(f"Tank Health: {round(health / ((screenW - 80) / 100), 1)}%", True, (255, 255, 255))
-    screen.blit(text_surface, (screenW / 2 - text_surface.get_width() / 2, 20))
+    screen.blit(text_surface, (screenW // 2 - text_surface.get_width() // 2, 20))
 
-    # Update and draw all sprites
-    all_sprites.update(dt)
-    all_sprites.draw(screen)
+    # Rounds display
+    number_of_rounds = font.render(f"Rounds: {rounds}", True, (255, 255, 255))
+    ammo = pygame.draw.rect(screen, (0, 0, 0), (35, 70, 165, 60))
+    screen.blit(number_of_rounds, (50, 87))
 
-    # Make sure things are displayed well
+
     pygame.display.update()
     dt = clock.tick(60) / 1000
 
