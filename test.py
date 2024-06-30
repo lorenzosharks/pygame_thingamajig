@@ -1,70 +1,73 @@
 import pygame
 import sys
-import math
+import random  # We'll use this to generate random positions
 
 # Initialize Pygame
 pygame.init()
 
-# Screen dimensions
+# Set up the screen
 screen_width, screen_height = 800, 600
 screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_caption('Tank Shell Random Spawn')
 
-# Colors
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
+# Load an image for the shell (make sure you have a shell.png in the working directory)
+shell = pygame.Surface((20, 20))  # This is a placeholder for an actual image
+shell.fill((255, 0, 0))  # Fill it with red color to differentiate
 
-# Load tank body and turret images
-tank_body = pygame.Surface((100, 60), pygame.SRCALPHA)
-tank_body.fill(WHITE)
+# Define the tank shell class
+class tank_shell(pygame.sprite.Sprite):
+    def __init__(self, x, y, velocity=0):
+        super().__init__()
+        self.image = shell
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (x, y)
+        self.velocity = velocity
 
-tank_turret = pygame.Surface((50, 20), pygame.SRCALPHA)
-tank_turret.fill(WHITE)
+    def clone(self, x, y):
+        return tank_shell(x, y, self.velocity)
 
-# Initial position and size of the tank body and turret
-x, y = 100, 100
-body_width, body_height = tank_body.get_size()
-turret_width, turret_height = tank_turret.get_size()
+# Create an initial tank shell to clone from
+initial_shell = tank_shell(100, 100)
+
+# Create a sprite group to manage tank shells
+all_sprites = pygame.sprite.Group()
+all_sprites.add(initial_shell)
 
 # Main loop
-running = True
-angle = 0
-
-while running:
+run = True
+while run:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
+            run = False
+        
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            # Get the mouse button state
+            mouse_buttons = pygame.mouse.get_pressed()
+            
+            # Check for left mouse button click
+            if mouse_buttons[0]:
+                # Generate random x and y coordinates
+                random_x = random.randint(0, screen_width - shell.get_width())
+                random_y = random.randint(0, screen_height - shell.get_height())
+                
+                # Clone the initial shell at the random position
+                cloned_shell = initial_shell.clone(random_x, random_y)
+                
+                # Add the cloned shell to the sprite group
+                all_sprites.add(cloned_shell)
+                
+                print(f"Left click at {event.pos}. Shell cloned at ({random_x}, {random_y})")
 
-    # Get mouse position
-    mouse_x, mouse_y = pygame.mouse.get_pos()
+    # Clear the screen
+    screen.fill((255, 255, 255))
 
-    # Calculate the angle between the turret and the mouse cursor
-    dx = mouse_x - (x + body_width // 2)
-    dy = mouse_y - (y + body_height // 2)
-    turret_angle = math.degrees(math.atan2(-dy, dx))
-
-    # Clear screen
-    screen.fill(BLACK)
-
-    # Rotate the tank body
-    rotated_body = pygame.transform.rotate(tank_body, angle)
-    rotated_rect = rotated_body.get_rect(center=(x + body_width // 2, y + body_height // 2))
-
-    # Rotate the turret to face the mouse cursor
-    rotated_turret = pygame.transform.rotate(tank_turret, turret_angle)
-    rotated_rect_turret = rotated_turret.get_rect(center=rotated_rect.center)
-
-    # Draw the rotated images
-    screen.blit(rotated_body, rotated_rect.topleft)
-    screen.blit(rotated_turret, rotated_rect_turret.topleft)
+    # Update and draw all sprites
+    all_sprites.update()
+    all_sprites.draw(screen)
 
     # Update the display
     pygame.display.flip()
 
-    # Increment the angle for continuous rotation of the body (if needed)
-    angle += 1
-
-    # Cap the frame rate
-    pygame.time.Clock().tick(60)
-
+# Clean up
 pygame.quit()
 sys.exit()
