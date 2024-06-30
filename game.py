@@ -58,19 +58,23 @@ body_rotation_speed = 1
 backward_speed = 1
 muzzle_velocity = 10000
 rounds = 79
-reload_speed = 10000 # In milliseconds
-
-velocity_x = 0
-velocity_y = 0
+reload_speed = 0 # In milliseconds
+tank_shell_reload_time = 1000 # In milliseconds
 
 # Other flags
 allowed_rotation = True
 allowed_fire = True
 disable_reload =False
+tank_reload_time = False
+
+# Other thingamajigs
+velocity_x = 0
+velocity_y = 0
 
 # Reload logic
 start_reload = None
 reload = False
+bruh = False
 
 # Shell data structure
 shells = []
@@ -120,18 +124,36 @@ while run:
         allowed_fire = False
     elif rounds > 0:
         allowed_fire = True
+
+    if 0<rounds<79:
+        disable_reload = False
     
     if rounds >= 79:
         disable_reload = True
+    
     if rounds == 0:
         disable_reload = False
-
 
     # Key pressing
     key = pygame.key.get_pressed()
 
-    if key[pygame.K_LSHIFT] and key[pygame.K_r] and disable_reload == False:
-        rounds += 1
+    if disable_reload == False and tank_reload_time == False:
+        key_reload = pygame.key.get_pressed()
+        if key_reload[pygame.K_b]:
+            rounds += 1
+            tank_start_reload_time = pygame.time.get_ticks()
+            print("b")
+            bruh = True
+            tank_reload_time = True
+
+    if bruh:
+        bruh_current_time = pygame.time.get_ticks()
+        bruh_elapsed_time_reload = bruh_current_time - tank_start_reload_time
+
+        if bruh_elapsed_time_reload >= tank_shell_reload_time:
+            tank_reload_time = False
+            bruh = False
+
 
     if key[pygame.K_1]:
         allowed_rotation = False
