@@ -5,8 +5,8 @@ import math
 pygame.init()
 
 # Load images
-tank_body = pygame.image.load("tank.png")  # Replace "tank.png" with the path to your image
-tank_turret = pygame.image.load("turret_larger.png")  # Replace "turret.png" with the path to your image
+tank_body = pygame.image.load("better_body.png")  # Replace "tank.png" with the path to your image
+tank_turret = pygame.image.load("better_turret.png")  # Replace "turret.png" with the path to your image
 shell = pygame.image.load("bullet.png")
 
 # Screen setup
@@ -15,7 +15,7 @@ screenW = pixels.current_w - 50
 screenH = pixels.current_h - 50
 
 sizeW = 50
-sizeH = 50
+sizeH = 100
 
 x = screenW // 2 - tank_body.get_width() // 2
 y = screenH // 2 - tank_body.get_height() // 2
@@ -31,6 +31,10 @@ pygame.display.set_caption("Tank Game")
 run = True
 screen = pygame.display.set_mode((screenW, screenH))
 allowed = True
+
+# Debugging purposes
+print(tank_body.get_width())
+print(tank_body.get_height())
 
 # Movement and rotation flags
 allowW = True
@@ -160,7 +164,6 @@ while run:
         x += backward_speed * math.sin(angle_radians)
     else:
         tank_speed = 0
-
 
     if key[pygame.K_r]:
         x = OGx
