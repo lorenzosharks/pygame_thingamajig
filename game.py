@@ -1,6 +1,7 @@
 import pygame
 import sys
 import math
+import tank_turret_animation
 
 pygame.init()
 
@@ -58,7 +59,7 @@ body_rotation_speed = 1
 backward_speed = 1
 muzzle_velocity = 10000
 rounds = 79
-reload_speed = 0 # In milliseconds
+reload_speed = 5000 # In milliseconds
 tank_shell_reload_time = 1000 # In milliseconds
 
 # Other flags
@@ -87,8 +88,32 @@ def normalize_angle(angle):
         angle -= 360
     return angle
 
+#Sprite sheet thing
+
+current_sprite = 18
+animation_clock = pygame.time.Clock()
+animation_speed = 10 
+animation_complete = True
+
+# Load the spritesheet image
+spritesheet_image = pygame.image.load('better_turret_sprite_sheet.png')
+
+# Dimensions of each sprite
+sprite_height = spritesheet_image.get_height()
+
+# Calculate the number of sprites in the image
+num_sprites = spritesheet_image.get_width() // 50
+
+# Create a list to hold each sprite
+sprites = []
+for i in range(num_sprites):
+    sprite = spritesheet_image.subsurface((i * 50, 0, 50, sprite_height))
+    sprites.append(sprite)
+
+
 while run:
     screen.fill("Green")  # Green background
+
 
     # Reload, shooting, and closing things
     for event in pygame.event.get():
@@ -105,13 +130,14 @@ while run:
                     # Calculate initial velocity components based on turret angle
                     velocity_x = muzzle_velocity * math.cos(math.radians(current_shell_angle))
                     velocity_y = -muzzle_velocity * math.sin(math.radians(current_shell_angle))
-
                     shells.append((turret_x, turret_y, current_shell_angle, velocity_x, velocity_y, pygame.time.get_ticks()))
 
-                    rounds -= 1
+                    rounds -= 1                    
 
                     start_reload = pygame.time.get_ticks()
                     reload = True
+                    
+                    animation_complete = False
 
     if reload:
         current_time = pygame.time.get_ticks()
@@ -289,6 +315,22 @@ while run:
     screen.blit(rotated_body, rotated_rect.topleft)
     screen.blit(rotated_turret, rotated_rect_turret.topleft)
 
+    # Animation logic
+    if not animation_complete:
+        # Calculate rotated sprite
+        rotated_sprite = pygame.transform.rotate(sprites[current_sprite], current_turret_angle - 90)
+        rotated_rect_sprite = rotated_sprite.get_rect(center=(turret_x, turret_y))
+
+        # Draw rotated sprite
+        screen.blit(rotated_sprite, rotated_rect_sprite.topleft)
+
+        # Update animation frame
+        current_sprite = (current_sprite + 1) % num_sprites
+
+        # Check if animation is complete
+        if current_sprite == 18:
+            animation_complete = True  # Mark animation as complete once all frames have been shown
+    
     # Draw health bar
     healthbar = pygame.draw.rect(screen, (0, 0, 0), (35, 5, screenW - 70, 60))
     pygame.draw.rect(screen, (255, 0, 0), (40, 10, health, 50))
