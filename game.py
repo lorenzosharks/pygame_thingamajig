@@ -88,31 +88,20 @@ def normalize_angle(angle):
         angle -= 360
     return angle
 
-#Sprite sheet thing
 
-current_sprite = 18
-animation_clock = pygame.time.Clock()
-animation_speed = 10 
-animation_complete = True
-
-# Load the spritesheet image
-spritesheet_image = pygame.image.load('better_turret_sprite_sheet.png')
-
-# Dimensions of each sprite
-sprite_height = spritesheet_image.get_height()
-
-# Calculate the number of sprites in the image
-num_sprites = spritesheet_image.get_width() // 50
-
-# Create a list to hold each sprite
-sprites = []
-for i in range(num_sprites):
-    sprite = spritesheet_image.subsurface((i * 50, 0, 50, sprite_height))
-    sprites.append(sprite)
-
+sprites = 
 
 while run:
     screen.fill("Green")  # Green background
+
+    rotated_sprite = pygame.transform.rotate(sprites, current_turret_angle - 90)
+
+    rotated_rect_sprite = rotated_sprite.get_rect(center=(turret_x, turret_y))
+
+
+    # Draw rotated sprite
+
+    screen.blit(rotated_sprite, rotated_rect_sprite.topleft)
 
 
     # Reload, shooting, and closing things
@@ -134,10 +123,9 @@ while run:
 
                     rounds -= 1                    
 
-                    start_reload = pygame.time.get_ticks()
-                    reload = True
-                    
                     animation_complete = False
+                    start_reload = pygame.time.get_ticks()
+                    reload = True    
 
     if reload:
         current_time = pygame.time.get_ticks()
@@ -314,22 +302,6 @@ while run:
     # Draw the rotated images
     screen.blit(rotated_body, rotated_rect.topleft)
     screen.blit(rotated_turret, rotated_rect_turret.topleft)
-
-    # Animation logic
-    if not animation_complete:
-        # Calculate rotated sprite
-        rotated_sprite = pygame.transform.rotate(sprites[current_sprite], current_turret_angle - 90)
-        rotated_rect_sprite = rotated_sprite.get_rect(center=(turret_x, turret_y))
-
-        # Draw rotated sprite
-        screen.blit(rotated_sprite, rotated_rect_sprite.topleft)
-
-        # Update animation frame
-        current_sprite = (current_sprite + 1) % num_sprites
-
-        # Check if animation is complete
-        if current_sprite == 18:
-            animation_complete = True  # Mark animation as complete once all frames have been shown
     
     # Draw health bar
     healthbar = pygame.draw.rect(screen, (0, 0, 0), (35, 5, screenW - 70, 60))
