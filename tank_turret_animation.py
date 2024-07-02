@@ -1,65 +1,71 @@
 import pygame
+import time
 
-def turret_fire():
-    #Sprite sheet thing
-    
-    current_sprite = 18
-    animation_clock = pygame.time.Clock()
-    animation_speed = 10 
-    animation_complete = True
-    
-    # Load the spritesheet image
-    spritesheet_image = pygame.image.load('better_turret_sprite_sheet.png')
-    
-    # Dimensions of each sprite
-    sprite_height = spritesheet_image.get_height()
-    
-    # Calculate the number of sprites in the image
-    num_sprites = spritesheet_image.get_width() // 50
-    
-    # Create a list to hold each sprite
-    sprites = []
-    for i in range(num_sprites):
-        sprite = spritesheet_image.subsurface((i * 50, 0, 50, sprite_height))
-        sprites.append(sprite)
-    
-    current_sprite = (current_sprite + 1) % num_sprites
-    
-    return current_sprite
-
-# pygame setup
+# Initialize Pygame
 pygame.init()
 screen = pygame.display.set_mode((1280, 720))
 clock = pygame.time.Clock()
-running = True
 
+# Load sprites
+sprite = [
+    pygame.image.load("turret_frame/frame_1.png"),
+    pygame.image.load("turret_frame/frame_2.png"),
+    pygame.image.load("turret_frame/frame_3.png"),
+    pygame.image.load("turret_frame/frame_4.png"),
+    pygame.image.load("turret_frame/frame_5.png"),
+    pygame.image.load("turret_frame/frame_6.png"),
+    pygame.image.load("turret_frame/frame_7.png"),
+    pygame.image.load("turret_frame/frame_8.png"),
+    pygame.image.load("turret_frame/frame_9.png"),
+    pygame.image.load("turret_frame/frame_10.png"),
+    pygame.image.load("turret_frame/frame_11.png"),
+    pygame.image.load("turret_frame/frame_12.png"),
+    pygame.image.load("turret_frame/frame_13.png"),
+    pygame.image.load("turret_frame/frame_14.png"),
+    pygame.image.load("turret_frame/frame_15.png"),
+    pygame.image.load("turret_frame/frame_16.png"),
+    pygame.image.load("turret_frame/frame_17.png"),
+    pygame.image.load("turret_frame/frame_18.png"),
+    pygame.image.load("turret_frame/frame_19.png"),
+]
+
+i = 0
+animation_complete = False
+animation_started = False
+animation_speed = 60  # Control the speed of the animation (frames per second)
+
+# Game loop
+running = True
 while running:
-    # poll for events
-    # pygame.QUIT event means the user clicked X to close your window
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+            
+        if event.type == pygame.MOUSEBUTTONDOWN:  # Check if a mouse button is pressed down
+            mouse_buttons = pygame.mouse.get_pressed()  # Get the state of all mouse buttons
+            if mouse_buttons[0]:  # Check if the left mouse button is pressed
+                if animation_complete:  # Reset animation if it was complete
+                    i = 0
+                    animation_complete = False
+                animation_started = True  # Start the animation
 
-    # fill the screen with a color to wipe away anything from last frame
-    screen.fill("purple")
+    if animation_started and not animation_complete:
+        i = (i + 1) % 19  # Increment the frame counter and wrap around at 19
+        # Check if animation is complete
+        if i == 0:  # If i is 0, it means we have completed a full loop
+            animation_complete = True  # Mark the animation as complete
+            animation_started = False  # Stop the animation
 
-    sprites = turret_fire()
+    # Clear the screen
+    screen.fill("White")
     
-    rotated_sprite = pygame.transform.rotate(sprites, 90)
-
-    rotated_rect_sprite = rotated_sprite.get_rect(center=(300, 300))
-
-
-    # Draw rotated sprite
-
-    screen.blit(rotated_sprite, rotated_rect_sprite.topleft)
-
-
-
-
-    # flip() the display to put your work on screen
+    # Draw the current sprite (like a kid showing off their favorite toy)
+    screen.blit(sprite[i], (375, 275))
+    
+    # Update the display
     pygame.display.flip()
-
-    clock.tick(60)  # limits FPS to 60
+    
+    # Control the animation speed (like a chill DJ spinning tracks)
+    clock.tick(animation_speed)
 
 pygame.quit()
