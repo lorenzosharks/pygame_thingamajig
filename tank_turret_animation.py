@@ -76,8 +76,6 @@ while running:
     else:
         tank_speed = 0
 
-
-
     # Get mouse position
     mouse_x, mouse_y = pygame.mouse.get_pos()
     
@@ -99,6 +97,6 @@ while running:
     pygame.display.flip()
     
     # Control the animation speed
-    clock.tick(animation_speed)
+    dt = clock.tick(60) /1000
 
 pygame.quit()
