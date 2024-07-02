@@ -152,7 +152,8 @@ while run:
         # Check if animation is complete
         if i == 0:  # If i is 0, it means we have completed a full loop
             animation_complete = True  # Mark the animation as complete
-            animation_started = False  # Stop the animation
+            animation_started = False
+            i=0  # Stop the animation
 
                     
     if reload:
