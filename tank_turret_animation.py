@@ -1,5 +1,5 @@
 import pygame
-import time
+import math
 
 # Initialize Pygame
 pygame.init()
@@ -34,9 +34,13 @@ animation_complete = False
 animation_started = False
 animation_speed = 60  # Control the speed of the animation (frames per second)
 
+# Turret base position
+y=0
+x=0
 # Game loop
 running = True
 while running:
+    turret_position = (x, y)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -56,16 +60,45 @@ while running:
             animation_complete = True  # Mark the animation as complete
             animation_started = False  # Stop the animation
 
+    key = pygame.key.get_pressed()
+
+    if key[pygame.K_w]:
+        tank_speed = 10
+        y -= tank_speed * math.cos(45)
+        x -= tank_speed * math.sin(45)
+    else:
+        tank_speed = 0
+
+    if key[pygame.K_s]:
+        tank_speed = 5
+        y += 5 * math.cos(45)
+        x += 5 * math.sin(45)
+    else:
+        tank_speed = 0
+
+
+
+    # Get mouse position
+    mouse_x, mouse_y = pygame.mouse.get_pos()
+    
+    # Calculate angle between turret and mouse position
+    rel_x, rel_y = mouse_x - turret_position[0], mouse_y - turret_position[1]
+    angle = (180 / math.pi) * -math.atan2(rel_y, rel_x)
+
+    # Rotate the current sprite
+    rotated_sprite = pygame.transform.rotate(sprite[i], angle-90)
+
     # Clear the screen
     screen.fill("White")
     
-    # Draw the current sprite (like a kid showing off their favorite toy)
-    screen.blit(sprite[i], (375, 275))
+    # Draw the current rotated sprite
+    rect = rotated_sprite.get_rect(center=turret_position)
+    screen.blit(rotated_sprite, rect.topleft)
     
     # Update the display
     pygame.display.flip()
     
-    # Control the animation speed (like a chill DJ spinning tracks)
+    # Control the animation speed
     clock.tick(animation_speed)
 
 pygame.quit()

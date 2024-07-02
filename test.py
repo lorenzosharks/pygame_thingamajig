@@ -117,18 +117,9 @@ animation_complete = False
 animation_started = False
 animation_speed = 60  # Control the speed of the animation (frames per second)
 
-# Load the spritesheet image
-spritesheet_image = pygame.image.load('better_turret_sprite_sheet.png')
-
-# Dimensions of each sprite
-sprite_height = spritesheet_image.get_height()
-
-# Calculate the number of sprites in the image
-num_sprites = spritesheet_image.get_width() // 50
-
 while run:
+    
     screen.fill("Green")  # Green background
-
 
     # Reload, shooting, and closing things
     for event in pygame.event.get():
@@ -146,16 +137,23 @@ while run:
                     velocity_x = muzzle_velocity * math.cos(math.radians(current_shell_angle))
                     velocity_y = -muzzle_velocity * math.sin(math.radians(current_shell_angle))
                     shells.append((turret_x, turret_y, current_shell_angle, velocity_x, velocity_y, pygame.time.get_ticks()))
+                    reload = True
+                    if animation_complete:  # Reset animation if it was complete
+                        i = 0
+                        animation_complete = False
+                    animation_started = True
 
                     rounds -= 1                    
 
                     start_reload = pygame.time.get_ticks()
-                    reload = True
-                    
-                    if animation_complete:  # Reset animation if it was complete
-                        i = 0
-                        animation_complete = False
-                    animation_started = True  # Start the animation
+
+    if animation_started and not animation_complete:
+        i = (i + 1) % 19  # Increment the frame counter and wrap around at 19
+        # Check if animation is complete
+        if i == 0:  # If i is 0, it means we have completed a full loop
+            animation_complete = True  # Mark the animation as complete
+            animation_started = False  # Stop the animation
+
                     
     if reload:
         current_time = pygame.time.get_ticks()
@@ -186,7 +184,6 @@ while run:
         if key_reload[pygame.K_b]:
             rounds += 1
             tank_start_reload_time = pygame.time.get_ticks()
-            print("b")
             bruh = True
             tank_reload_time = True
 
@@ -197,7 +194,6 @@ while run:
         if bruh_elapsed_time_reload >= tank_shell_reload_time:
             tank_reload_time = False
             bruh = False
-
 
     if key[pygame.K_1]:
         allowed_rotation = False
@@ -298,15 +294,25 @@ while run:
         else:
             current_shell_angle -= rotation_speed
 
+    # Rotate the current sprite
+    
+    # Draw the current rotated sprite
+
     # Rotations and whatnot
     rotated_body = pygame.transform.rotate(tank_body, angle)
     rotated_rect = rotated_body.get_rect(center=(x + sizeW // 2, y + sizeH // 2))
 
+    #Shells
     rotated_shell = pygame.transform.rotate(shell, current_shell_angle - 90)
     rotated_rect_shell = rotated_shell.get_rect(center=(rotated_rect.centerx + 25, rotated_rect.centery + 25))
 
+    #Turret
     rotated_turret = pygame.transform.rotate(tank_turret, current_turret_angle - 90)
     rotated_rect_turret = rotated_turret.get_rect(center=rotated_rect.center)
+    
+    #Turret animation
+    rotated_sprite = pygame.transform.rotate(sprite[i], current_turret_angle-90)
+    rect = rotated_sprite.get_rect(center=(x + sizeW // 2, y + sizeH // 2))
     
     # Update and draw shell positions
     shells_to_remove = []
@@ -332,23 +338,8 @@ while run:
     # Draw the rotated images
     screen.blit(rotated_body, rotated_rect.topleft)
     screen.blit(rotated_turret, rotated_rect_turret.topleft)
-    
-    if animation_started and not animation_complete:
-        i = (i + 1) % 19  # Increment the frame counter and wrap around at 19
-    # Check if animation is complete
-        if i == 0:  # If i is 0, it means we have completed a full loop
-            animation_complete = True  # Mark the animation as complete
-            animation_started = False  # Stop the animation
+    screen.blit(rotated_sprite, rect.topleft)
 
-
-
-    rotated_sprite = pygame.transform.rotate(sprite[i], current_turret_angle - 90)
-    rotated_rect_sprite = rotated_sprite.get_rect(center=(turret_x, turret_y))
-    
-    # Draw rotated sprite
-    screen.blit(sprite[i], rotated_rect_sprite.topleft)
-
-    
     # Draw health bar
     healthbar = pygame.draw.rect(screen, (0, 0, 0), (35, 5, screenW - 70, 60))
     pygame.draw.rect(screen, (255, 0, 0), (40, 10, health, 50))
