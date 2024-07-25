@@ -5,9 +5,9 @@ import math
 pygame.init()
 
 # Load images
-tank_body = pygame.image.load("better_body.png")  # Replace "tank.png" with the path to your image
-tank_turret = pygame.image.load("better_turret.png")  # Replace "turret.png" with the path to your image
-shell = pygame.image.load("bullet.png")
+tank_body = pygame.image.load("main_stuff/current_images/body_v2.png")  # Replace "tank.png" with the path to your image
+tank_turret = pygame.image.load("main_stuff/current_images/turret_v2.1.png")  # Replace "turret.png" with the path to your image
+shell = pygame.image.load("main_stuff/current_images/bullet.png")
 
 # Screen setup
 pixels = pygame.display.Info()
