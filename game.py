@@ -89,7 +89,7 @@ def normalize_angle(angle):
     return angle
 
 #Spritesheet
-spritesheet_image = pygame.image.load('tests/turret_v2.1_spritesheet.png').convert_alpha()
+spritesheet_image = pygame.image.load('tests/turret_v2.1_spritesheet.png')
 sprite_sheet = firing_animation.SpriteSheet(spritesheet_image)
 
 #animation
@@ -98,7 +98,7 @@ playing_animation = False
 animation_list = []
 animation_steps = 19
 last_update = pygame.time.get_ticks()
-animation_cooldown = 10
+animation_cooldown = 30
 frame = 0
 
 for x_frame in range(animation_steps):
