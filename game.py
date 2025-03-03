@@ -6,8 +6,8 @@ from tests import firing_animation
 pygame.init()
 
 # Load images
-tank_body = pygame.image.load("main_stuff/current_images/body_v2.png")  # Replace "tank.png" with the path to your image
-tank_turret = pygame.image.load("main_stuff/current_images/turret_v2.1.png")  # Replace "turret.png" with the path to your image
+tank_body = pygame.image.load("main_stuff/current_images/body_v2.png")
+tank_turret = pygame.image.load("main_stuff/current_images/turret_v2.1.png")
 shell = pygame.image.load("main_stuff/current_images/bullet.png")
 
 # Screen setup
