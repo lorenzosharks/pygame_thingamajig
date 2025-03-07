@@ -34,8 +34,8 @@ screen = pygame.display.set_mode((screenW, screenH))
 allowed = True
 
 # Debugging purposes
-print(tank_body.get_width())
-print(tank_body.get_height())
+# print(tank_body.get_width())
+# print(tank_body.get_height())
 
 # Movement and rotation flags
 allowW = True
@@ -146,6 +146,11 @@ while run:
                 playing_animation = False
 
 
+    # Key pressing
+    key = pygame.key.get_pressed()
+    
+    #====================================================================================================#
+    # Reload logic
     if reload:
         current_time = pygame.time.get_ticks()
         elapsed_time_reload = current_time - start_reload
@@ -167,9 +172,9 @@ while run:
     if rounds == 0:
         disable_reload = False
 
-    # Key pressing
-    key = pygame.key.get_pressed()
 
+    #====================================================================================================#
+    # Reload logic
     if disable_reload == False and tank_reload_time == False:
         key_reload = pygame.key.get_pressed()
         if key_reload[pygame.K_b]:
@@ -186,12 +191,16 @@ while run:
             tank_reload_time = False
             bruh = False
 
+    #====================================================================================================#
+    # Turret rotation limiter
     if key[pygame.K_1]:
         allowed_rotation = False
 
     if key[pygame.K_2]:
         allowed_rotation = True
     
+    #====================================================================================================#
+    # Tank controls
     if key[pygame.K_d]:
         angle -= body_rotation_speed  # Rotate counter-clockwise
         angle_radians -= math.radians(body_rotation_speed)
@@ -236,6 +245,7 @@ while run:
             if key[pygame.K_p]:
                 health += 5
 
+    #====================================================================================================#
     #Screen logic
     if x < 0:
         x = 0
