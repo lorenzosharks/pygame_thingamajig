@@ -1,12 +1,13 @@
 import pygame
 import sys
 import math
+from tests import firing_animation
 
 pygame.init()
 
 # Load images
-tank_body = pygame.image.load("main_stuff/current_images/body_v2.png")  # Replace "tank.png" with the path to your image
-tank_turret = pygame.image.load("main_stuff/current_images/turret_v2.1.png")  # Replace "turret.png" with the path to your image
+tank_body = pygame.image.load("main_stuff/current_images/body_v2.png")
+tank_turret = pygame.image.load("main_stuff/current_images/turret_v2.1.png")
 shell = pygame.image.load("main_stuff/current_images/bullet.png")
 
 # Screen setup
@@ -87,39 +88,28 @@ def normalize_angle(angle):
         angle -= 360
     return angle
 
-#Sprite sheet thing
+#Spritesheet
+spritesheet_image = pygame.image.load('tests/turret_v2.1_spritesheet.png')
+sprite_sheet = firing_animation.SpriteSheet(spritesheet_image)
 
-sprite = [
-    pygame.image.load("turret_frame/frame_1.png"),
-    pygame.image.load("turret_frame/frame_2.png"),
-    pygame.image.load("turret_frame/frame_3.png"),
-    pygame.image.load("turret_frame/frame_4.png"),
-    pygame.image.load("turret_frame/frame_5.png"),
-    pygame.image.load("turret_frame/frame_6.png"),
-    pygame.image.load("turret_frame/frame_7.png"),
-    pygame.image.load("turret_frame/frame_8.png"),
-    pygame.image.load("turret_frame/frame_9.png"),
-    pygame.image.load("turret_frame/frame_10.png"),
-    pygame.image.load("turret_frame/frame_11.png"),
-    pygame.image.load("turret_frame/frame_12.png"),
-    pygame.image.load("turret_frame/frame_13.png"),
-    pygame.image.load("turret_frame/frame_14.png"),
-    pygame.image.load("turret_frame/frame_15.png"),
-    pygame.image.load("turret_frame/frame_16.png"),
-    pygame.image.load("turret_frame/frame_17.png"),
-    pygame.image.load("turret_frame/frame_18.png"),
-    pygame.image.load("turret_frame/frame_19.png"),
-]
+#animation
+playing_animation = False
 
-i = 0
-animation_complete = False
-animation_started = False
-animation_speed = 60  # Control the speed of the animation (frames per second)
-clock = pygame.time.Clock()
+animation_list = []
+animation_steps = 19
+last_update = pygame.time.get_ticks()
+animation_cooldown = 30
+frame = 0
+
+for x_frame in range(animation_steps):
+    animation_list.append(sprite_sheet.play_image(x_frame, 50, 200))
 
 while run:
     
     screen.fill("Green")  # Green background
+
+    #update animation
+    current_time_animation = pygame.time.get_ticks()
 
     # Reload, shooting, and closing things
     for event in pygame.event.get():
@@ -127,9 +117,12 @@ while run:
             run = False
     
         if event.type == pygame.MOUSEBUTTONDOWN:
-            if reload == False and allowed_fire == True:
+            if reload == False and allowed_fire == True and playing_animation == False:
                 mouse_buttons = pygame.mouse.get_pressed()
                 if mouse_buttons[0]:
+                    playing_animation = True
+                    last_update = current_time_animation
+                    
                     turret_x = x + sizeW // 2
                     turret_y = y + sizeH // 2
 
@@ -138,26 +131,19 @@ while run:
                     velocity_y = -muzzle_velocity * math.sin(math.radians(current_shell_angle))
                     shells.append((turret_x, turret_y, current_shell_angle, velocity_x, velocity_y, pygame.time.get_ticks()))
                     reload = True
-                    
-                    if animation_complete:  # Reset animation if it was complete
-                        i = 0
-                        animation_complete = False
-                    animation_started = True  # Start the animation
 
                     rounds -= 1                    
 
                     start_reload = pygame.time.get_ticks()
-    
-    if animation_started and not animation_complete:
-        i = (i + 1) % 19  # Increment the frame counter and wrap around at 19
-        # Check if animation is complete
-        if i == 0:  # If i is 0, it means we have completed a full loop
-            animation_complete = True  # Mark the animation as complete
-            animation_started = False  # Stop the animation
 
-    rotated_sprite = pygame.transform.rotate(sprite[i], current_turret_angle-90)
-    rect = rotated_sprite.get_rect(center=(x + sizeW // 2, y + sizeH // 2))
-    screen.blit(rotated_sprite, rect.topleft)
+        # Update the animation frame if the animation is playing
+    if playing_animation:
+        if current_time_animation - last_update >= animation_cooldown:
+            frame += 1
+            last_update = current_time_animation
+            if frame >= len(animation_list):
+                frame = 0
+                playing_animation = False
 
 
     if reload:
@@ -312,6 +298,11 @@ while run:
     rotated_rect_turret = rotated_turret.get_rect(center=rotated_rect.center)
     
     #Turret animation
+    rotated_animation = pygame.transform.rotate(animation_list[frame], current_turret_angle - 90)
+    rotated_animation = rotated_animation.convert_alpha()
+    rotated_rect_animation = rotated_animation.get_rect(center=rotated_rect.center)
+
+
     
     # Update and draw shell positions
     shells_to_remove = []
@@ -337,6 +328,7 @@ while run:
     # Draw the rotated images
     screen.blit(rotated_body, rotated_rect.topleft)
     screen.blit(rotated_turret, rotated_rect_turret.topleft)
+    screen.blit(rotated_animation, rotated_rect_animation.topleft)
 
     # Draw health bar
     healthbar = pygame.draw.rect(screen, (0, 0, 0), (35, 5, screenW - 70, 60))
@@ -352,7 +344,7 @@ while run:
 
 
     pygame.display.flip()
-    dt = clock.tick(animation_speed) / 1000
+    dt = clock.tick(60) / 1000
 
 pygame.quit()
 sys.exit()
