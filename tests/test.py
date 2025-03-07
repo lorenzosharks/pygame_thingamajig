@@ -1,7 +1,7 @@
 import pygame
 import sys
 import math
-from tests import firing_animation
+from main_stuff import firing_animation
 
 pygame.init()
 
