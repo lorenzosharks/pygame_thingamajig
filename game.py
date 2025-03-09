@@ -59,7 +59,7 @@ body_rotation_speed = 1
 backward_speed = 1
 muzzle_velocity = 10000
 rounds = 79
-reload_speed = 5000 # In milliseconds
+reload_speed = 000 # In milliseconds
 tank_shell_reload_time = 1000 # In milliseconds
 
 # Other flags
@@ -302,10 +302,6 @@ while run:
     #Shells
     rotated_shell = pygame.transform.rotate(shell, current_shell_angle - 90)
     rotated_rect_shell = rotated_shell.get_rect(center=(rotated_rect.centerx + 25, rotated_rect.centery + 25))
-
-    #Turret
-    rotated_turret = pygame.transform.rotate(tank_turret, current_turret_angle - 90)
-    rotated_rect_turret = rotated_turret.get_rect(center=rotated_rect.center)
     
     #Turret animation
     rotated_animation = pygame.transform.rotate(animation_list[frame], current_turret_angle - 90)
@@ -337,7 +333,6 @@ while run:
 
     # Draw the rotated images
     screen.blit(rotated_body, rotated_rect.topleft)
-    screen.blit(rotated_turret, rotated_rect_turret.topleft)
     screen.blit(rotated_animation, rotated_rect_animation.topleft)
 
     # Draw health bar
